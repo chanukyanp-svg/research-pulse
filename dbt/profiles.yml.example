@@ -1,0 +1,14 @@
+# Copy this to ~/.dbt/profiles.yml (or point to it with --profiles-dir),
+# and fill in values from your .env / docker-compose setup.
+research_pulse:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('PGHOST', 'localhost') }}"
+      port: "{{ env_var('PGPORT', '5432') | as_number }}"
+      user: "{{ env_var('PGUSER', 'postgres') }}"
+      password: "{{ env_var('PGPASSWORD', 'postgres') }}"
+      dbname: "{{ env_var('PGDATABASE', 'research_pulse') }}"
+      schema: public
+      threads: 4

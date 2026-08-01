@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
+  <opensearch:totalResults>2</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <opensearch:itemsPerPage>2</opensearch:itemsPerPage>
+  <entry>
+    <id>http://arxiv.org/abs/2501.01234v1</id>
+    <updated>2025-01-15T18:30:00Z</updated>
+    <published>2025-01-14T09:00:00Z</published>
+    <title>Cross-Subject EEG-fNIRS Fusion via Self-Supervised Contrastive Learning</title>
+    <summary>We propose a self-supervised framework for fusing EEG and fNIRS signals
+    to improve cross-subject generalization in brain-computer interfaces. Our approach
+    uses contrastive pretraining on unlabeled multimodal recordings before fine-tuning
+    on downstream motor imagery classification.</summary>
+    <author><name>Jane A. Smith</name></author>
+    <author><name>Rahul Mehta</name></author>
+    <author><name>Wei Chen</name></author>
+    <arxiv:primary_category term="q-bio.NC" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="q-bio.NC" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2412.09876v2</id>
+    <updated>2024-12-20T11:00:00Z</updated>
+    <published>2024-12-18T07:45:00Z</published>
+    <title>Parameterized Quantum Circuits for Attention Mechanisms in EEG Seizure Detection</title>
+    <summary>This work explores replacing classical dot-product self-attention with a
+    parameterized quantum circuit within a transformer encoder for epileptic seizure
+    detection from EEG, evaluated on CHB-MIT and TUH corpora.</summary>
+    <author><name>Alex Turner</name></author>
+    <author><name>Priya Nair</name></author>
+    <arxiv:primary_category term="quant-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="quant-ph" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+  </entry>
+</feed>

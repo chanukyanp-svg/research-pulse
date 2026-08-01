@@ -1,0 +1,10 @@
+psycopg2-binary>=2.9
+matplotlib>=3.8
+dbt-postgres>=1.8
+
+# Added in later weeks (uncomment when you get there):
+# apache-airflow>=2.9
+# networkx>=3.3
+# streamlit>=1.35
+# pyvis>=0.3
+# requests>=2.32
