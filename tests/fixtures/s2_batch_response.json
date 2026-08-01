@@ -1,0 +1,37 @@
+[
+  {
+    "paperId": "649def34f8be52c8b66281af98ae884c09aef38b",
+    "externalIds": {
+      "ArXiv": "2101.00027",
+      "DBLP": "conf/icml/Smith21"
+    },
+    "title": "A Sample Paper on Quantum ML",
+    "citationCount": 42,
+    "referenceCount": 30,
+    "year": 2021,
+    "venue": "ICML"
+  },
+  null,
+  {
+    "paperId": "abc123def456",
+    "externalIds": {
+      "ArXiv": "2102.00001"
+    },
+    "title": "Brain-Computer Interfaces with fNIRS",
+    "citationCount": 0,
+    "referenceCount": 15,
+    "year": 2021,
+    "venue": null
+  },
+  {
+    "paperId": "noarxiv999",
+    "externalIds": {
+      "DBLP": "conf/nips/Anonymous21"
+    },
+    "title": "No ArXiv ID Here",
+    "citationCount": 5,
+    "referenceCount": 5,
+    "year": 2021,
+    "venue": "NeurIPS"
+  }
+]
