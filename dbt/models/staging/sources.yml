@@ -14,3 +14,6 @@ sources:
               - not_null
       - name: authors
       - name: paper_authors
+      - name: paper_citations
+      - name: ingestion_log
+      - name: enrichment_log

@@ -1,16 +1,8 @@
-name: 'research_pulse'
-version: '1.0.0'
-config-version: 2
-
-profile: 'research_pulse'
-
-model-paths: ["models"]
-target-path: "target"
-clean-targets:
-  - "target"
-  - "dbt_packages"
-
 models:
   research_pulse:
     staging:
       +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table
