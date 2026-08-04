@@ -2,7 +2,7 @@
 
 An end-to-end analytics pipeline that tracks research trends in BCI/neurotech + quantum ML by ingesting papers from arXiv, enriching them with Semantic Scholar citation data, modeling them in a warehouse, and surfacing trend and citation-network insights.
 
-**Status: Week 2 of 4.** This slice covers arXiv ingestion → Postgres → dbt staging → S2 citation enrichment → Airflow scheduling. Network centrality analysis and the interactive dashboard land in later weeks (see Roadmap).
+**Status: Week 3 of 4.** This slice adds dbt intermediate/marts models (keyword trends, author rollups, citation network), `networkx`-based centrality analysis, and rising-author detection. The interactive Streamlit dashboard lands in Week 4.
 
 ## Architecture (target end-state)
 arXiv API ──┐
@@ -12,16 +12,31 @@ plain
 
 ## What's working right now
 
+### Ingestion & Enrichment (Weeks 1–2)
 - `ingestion/arxiv_client.py` — queries arXiv's public Atom API, parses entries into `Paper` objects
 - `ingestion/load.py` — upserts papers/authors into Postgres, deduping on `arxiv_id`
 - `scripts/run_ingest.py` — CLI to pull a set of seed queries and load them
-- `dbt/models/staging/stg_arxiv_papers.sql` — cleaned staging view with week/month rollups and S2 enrichment columns
-- `analysis/trend_chart.py` — static matplotlib chart of papers/week by category
 - `enrichment/s2_client.py` — Semantic Scholar API client (citation counts, reference networks)
 - `enrichment/enrich.py` — idempotent enrichment orchestrator; skips already-enriched papers
 - `dags/research_pulse_dag.py` — Airflow DAG automating ingest → enrichment
+
+### Transformation (Week 3)
+- `dbt/models/staging/stg_arxiv_papers.sql` — cleaned staging view with week/month rollups and S2 enrichment columns
+- `dbt/models/intermediate/int_paper_keywords.sql` — unnested categories + title-extracted keywords
+- `dbt/models/intermediate/int_author_papers.sql` — author-paper bridge with citation metadata
+- `dbt/models/marts/mart_keyword_trends.sql` — weekly/monthly keyword frequency
+- `dbt/models/marts/mart_author_rollups.sql` — author-level bibliometrics (productivity, impact, velocity)
+- `dbt/models/marts/mart_paper_network.sql` — SQL-computed degree centrality per paper
+
+### Analysis (Week 3)
+- `analysis/trend_chart.py` — static matplotlib chart of papers/week by category
+- `analysis/centrality.py` — `networkx` PageRank, betweenness, and degree centrality on citation graph
+- `analysis/rising_authors.py` — detects authors with accelerating publication velocity
+
+### Tests
 - `tests/test_arxiv_client.py` — parser tests against saved fixture (no network)
 - `tests/test_s2_client.py` — S2 response parsing tests against saved fixture (no network)
+- `tests/test_centrality.py` — centrality logic tests on mock graphs (no database)
 
 ## Setup
 
@@ -29,20 +44,23 @@ plain
 
 ```powershell
 docker compose up -d
-This also runs sql/schema.sql automatically on first boot. If you ever need to re-apply it manually:
+Apply schema migrations
 powershell
+# Week 1 base schema
 docker exec -i research_pulse_pg psql -U postgres -d research_pulse < sql/schema.sql
-Apply Week 2 schema migration (adds S2 columns, citation edges, enrichment log)
-powershell
+
+# Week 2 S2 enrichment
 Get-Content sql/migration_002_s2_enrichment.sql | docker exec -i research_pulse_pg psql -U postgres -d research_pulse
+
+# Week 3 analysis tables
+Get-Content sql/migration_003_week3_analysis.sql | docker exec -i research_pulse_pg psql -U postgres -d research_pulse
 Install dependencies
 powershell
 py -m venv .venv
 .venv\Scripts\activate
 py -m pip install -r requirements.txt
-(Optional) Install Airflow
-powershell
 py -m pip install -r requirements-airflow.txt
+py -m pip install -r requirements-analysis.txt
 Configure environment
 powershell
 cp .env.example .env
@@ -54,19 +72,26 @@ cp dbt/profiles.yml.example ~/.dbt/profiles.yml
 cd dbt
 dbt debug   # should say "All checks passed!"
 Running the pipeline
-Manual run
+Full manual run
 powershell
-# 1. Pull papers from arXiv and load into Postgres
+# 1. Ingest
 py -m scripts.run_ingest
 
-# 2. Enrich with Semantic Scholar citation data
+# 2. Enrich (optional — get an S2_API_KEY for better rate limits)
 py -m enrichment.enrich
 
-# 3. Build the dbt staging model
+# 3. Build dbt models + tests
 cd dbt
-dbt run && dbt test
+dbt run
+dbt test
 
-# 4. Generate the trend chart
+# 4. Network centrality analysis
+py -m analysis.centrality --export
+
+# 5. Rising author detection
+py -m analysis.rising_authors --export
+
+# 6. Generate trend chart
 py -m analysis.trend_chart --out charts/trend.png
 Airflow scheduled run
 powershell
@@ -76,7 +101,7 @@ airflow users create --username admin --password admin --firstname Admin --lastn
 airflow scheduler
 # In another terminal:
 airflow webserver -p 8080
-Then visit http://localhost:8080, enable the research_pulse_dag, and trigger a run.
+Then visit http://localhost:8080 and trigger the research_pulse_dag.
 Running tests
 powershell
 $env:PYTHONPATH = "."
@@ -91,3 +116,4 @@ Why upsert on arxiv_id instead of a full replace-load? Papers get revised (new v
 Why a dbt view, not a table, for staging? No data volume pressure yet at this stage — views keep the staging layer always-fresh without an extra build step. This will likely switch to table materialization once the intermediate/marts layer in Week 3 starts joining across it repeatedly.
 Why arXiv before Semantic Scholar? arXiv has no rate-limit friction and no key requirement, so it's the fastest path to a working v0. Semantic Scholar is layered in next for citation edges and enrichment.
 S2 enrichment idempotence: Already-enriched papers are skipped automatically. Papers not found in S2 are marked with s2_enriched_at but s2_id = NULL so they aren't retried indefinitely. This is important because S2's index lags arXiv by days to weeks for very recent papers.
+Centrality on sparse graphs: With few citation edges (typical for recent papers), PageRank and betweenness scores will be low. The pipeline handles empty graphs gracefully and improves as the citation network grows over time.
